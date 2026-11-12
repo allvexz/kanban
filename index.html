@@ -4,287 +4,150 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#100d11">
-  <title>Flowboard — Quadro Kanban</title>
+  <title>Flowboard — Acesso e Quadro Kanban</title>
   <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <main class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 3.5 14 9l5.5 2-5.5 2-2 5.5L10 13l-5.5-2L10 9l2-5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-            <circle cx="12" cy="11" r="1.5" fill="currentColor"/>
-          </svg>
+  <div id="login-screen" class="auth-screen">
+    <main class="auth-shell">
+      <section class="auth-panel" aria-labelledby="login-title">
+        <div class="brand-inline">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3.5 14 9l5.5 2-5.5 2-2 5.5L10 13l-5.5-2L10 9l2-5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              <circle cx="12" cy="11" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <p class="brand-name">Flowboard</p>
+            <p class="brand-caption">Meu quadro Kanban</p>
+          </div>
         </div>
-        <div>
-          <p class="brand-name">Flowboard</p>
-          <p class="brand-caption">Organize seu trabalho com clareza</p>
-        </div>
-      </div>
-      <button class="add-button" id="open-modal" type="button">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Adicionar Nova Tarefa
-      </button>
-    </header>
 
-    <section aria-labelledby="board-title">
-      <div class="heading">
-        <div>
-          <h1 id="board-title">Meu quadro</h1>
-          <p>Acompanhe suas tarefas do início à conclusão.</p>
+        <div class="auth-header">
+          <p class="eyebrow">Acesso</p>
+          <h1 id="login-title">Entrar na sua conta</h1>
         </div>
-        <div class="total-count" aria-live="polite"><strong id="total-count">0</strong> tarefas no quadro</div>
-      </div>
 
-      <div class="board" id="board">
-        <section class="column" data-status="todo" aria-labelledby="title-todo">
-          <header class="column-header">
-            <h2 class="column-title" id="title-todo"><span class="status-dot"></span>A Fazer</h2>
-            <span class="column-count" aria-label="0 tarefas">0</span>
-          </header>
-          <div class="task-list" data-list="todo" aria-label="Tarefas a fazer"></div>
-        </section>
-        <section class="column" data-status="doing" aria-labelledby="title-doing">
-          <header class="column-header">
-            <h2 class="column-title" id="title-doing"><span class="status-dot"></span>Em Andamento</h2>
-            <span class="column-count" aria-label="0 tarefas">0</span>
-          </header>
-          <div class="task-list" data-list="doing" aria-label="Tarefas em andamento"></div>
-        </section>
-        <section class="column" data-status="done" aria-labelledby="title-done">
-          <header class="column-header">
-            <h2 class="column-title" id="title-done"><span class="status-dot"></span>Concluído</h2>
-            <span class="column-count" aria-label="0 tarefas">0</span>
-          </header>
-          <div class="task-list" data-list="done" aria-label="Tarefas concluídas"></div>
-        </section>
-      </div>
-      <p class="board-hint">Dica: arraste os cartões para movê-los entre as colunas.</p>
-    </section>
-  </main>
+        <form id="login-form" class="auth-form" novalidate>
+          <div class="field">
+            <label for="login-email">E-mail ou nome de usuário</label>
+            <input id="login-email" name="email" type="text" autocomplete="username" placeholder="nome@empresa.com" required>
+          </div>
 
-  <div class="modal-backdrop" id="modal-backdrop" hidden>
-    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description">
-      <header class="modal-header">
-        <div>
-          <h2 id="modal-title">Nova tarefa</h2>
-          <p id="modal-description">Adicione uma atividade ao seu quadro.</p>
-        </div>
-        <button class="modal-close" id="close-modal" type="button" aria-label="Fechar">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </button>
-      </header>
-      <form id="task-form">
-        <div class="field">
-          <label for="task-title">Título</label>
-          <input id="task-title" name="title" type="text" maxlength="100" placeholder="Ex.: Preparar apresentação" required>
-        </div>
-        <div class="field">
-          <label for="task-description">Descrição <span class="optional">(opcional)</span></label>
-          <textarea id="task-description" name="description" maxlength="500" placeholder="Adicione detalhes sobre esta tarefa..."></textarea>
-        </div>
-        <div class="form-actions">
-          <button class="cancel-button" id="cancel-modal" type="button">Cancelar</button>
-          <button class="submit-button" type="submit">Adicionar tarefa</button>
-        </div>
-      </form>
-    </section>
+          <div class="field password-field">
+            <label for="login-password">Senha</label>
+            <div class="password-wrap">
+              <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+              <button id="toggle-password" class="password-toggle" type="button" aria-label="Mostrar senha">Mostrar</button>
+            </div>
+          </div>
+
+          <div id="auth-message" class="auth-message" role="alert" aria-live="polite"></div>
+
+          <button class="primary-button" type="submit">Entrar</button>
+          <button id="create-account-button" class="secondary-button" type="button">Criar conta</button>
+        </form>
+      </section>
+    </main>
   </div>
 
-  <script>
-    (() => {
-      const STORAGE_KEY = "flowboard.tasks.v1";
-      const statuses = ["todo", "doing", "done"];
-      const backdrop = document.getElementById("modal-backdrop");
-      const form = document.getElementById("task-form");
-      const titleInput = document.getElementById("task-title");
-      const descriptionInput = document.getElementById("task-description");
-      let draggedTaskId = null;
-      let tasks = loadTasks();
+  <div id="app-screen" class="app-screen hidden" aria-live="polite">
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3.5 14 9l5.5 2-5.5 2-2 5.5L10 13l-5.5-2L10 9l2-5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              <circle cx="12" cy="11" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <p class="brand-name">Flowboard</p>
+            <p class="brand-caption">Organize seu trabalho com clareza</p>
+          </div>
+        </div>
 
-      function loadTasks() {
-        try {
-          const stored = localStorage.getItem(STORAGE_KEY);
-          if (stored === null) return [];
-          const parsed = JSON.parse(stored);
-          if (!Array.isArray(parsed)) throw new Error("Os dados salvos não estão em um formato válido.");
-          return parsed.filter((task) =>
-            task && typeof task.id === "string" &&
-            typeof task.title === "string" &&
-            typeof task.description === "string" &&
-            statuses.includes(task.status) &&
-            typeof task.createdAt === "string"
-          );
-        } catch (error) {
-          console.error("Não foi possível carregar as tarefas salvas.", error);
-          return [];
-        }
-      }
+        <div class="topbar-actions">
+          <button class="ghost-button" id="back-home-button" type="button">Voltar ao início</button>
+          <button class="ghost-button" id="logout-button" type="button">Sair</button>
+          <button class="add-button" id="open-modal" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Adicionar Nova Tarefa
+          </button>
+        </div>
+      </header>
 
-      function saveTasks() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-        } catch (error) {
-          console.error("Não foi possível salvar as tarefas no navegador.", error);
-          window.alert("Não foi possível salvar suas tarefas. Verifique o espaço disponível no navegador.");
-        }
-      }
+      <section aria-labelledby="board-title">
+        <div class="heading">
+          <div>
+            <h1 id="board-title">Meu quadro</h1>
+            <p>Acompanhe suas tarefas do início à conclusão.</p>
+          </div>
+          <div class="total-count" aria-live="polite"><strong id="total-count">0</strong> tarefas no quadro</div>
+        </div>
 
-      function createTaskCard(task) {
-        const card = document.createElement("article");
-        card.className = "task-card";
-        card.draggable = true;
-        card.dataset.taskId = task.id;
+        <div class="board" id="board">
+          <section class="column" data-status="todo" aria-labelledby="title-todo">
+            <header class="column-header">
+              <h2 class="column-title" id="title-todo"><span class="status-dot"></span>A Fazer</h2>
+              <span class="column-count" aria-label="0 tarefas">0</span>
+            </header>
+            <div class="task-list" data-list="todo" aria-label="Tarefas a fazer"></div>
+          </section>
 
-        const top = document.createElement("div");
-        top.className = "task-card-top";
-        const title = document.createElement("h3");
-        title.textContent = task.title;
-        const remove = document.createElement("button");
-        remove.className = "delete-button";
-        remove.type = "button";
-        remove.setAttribute("aria-label", `Excluir tarefa: ${task.title}`);
-        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        icon.setAttribute("viewBox", "0 0 24 24");
-        icon.setAttribute("fill", "none");
-        icon.setAttribute("aria-hidden", "true");
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", "M4 7h16M10 11v6m4-6v6M5.5 7l1 13h11l1-13M9 7V4h6v3");
-        path.setAttribute("stroke", "currentColor");
-        path.setAttribute("stroke-width", "1.7");
-        path.setAttribute("stroke-linecap", "round");
-        path.setAttribute("stroke-linejoin", "round");
-        icon.append(path);
-        remove.append(icon);
-        remove.addEventListener("click", () => {
-          tasks = tasks.filter((item) => item.id !== task.id);
-          saveTasks();
-          render();
-        });
-        top.append(title, remove);
+          <section class="column" data-status="doing" aria-labelledby="title-doing">
+            <header class="column-header">
+              <h2 class="column-title" id="title-doing"><span class="status-dot"></span>Em Andamento</h2>
+              <span class="column-count" aria-label="0 tarefas">0</span>
+            </header>
+            <div class="task-list" data-list="doing" aria-label="Tarefas em andamento"></div>
+          </section>
 
-        const description = document.createElement("p");
-        description.className = "task-description";
-        description.textContent = task.description;
+          <section class="column" data-status="done" aria-labelledby="title-done">
+            <header class="column-header">
+              <h2 class="column-title" id="title-done"><span class="status-dot"></span>Concluído</h2>
+              <span class="column-count" aria-label="0 tarefas">0</span>
+            </header>
+            <div class="task-list" data-list="done" aria-label="Tarefas concluídas"></div>
+          </section>
+        </div>
+        <p class="board-hint">Dica: arraste os cartões para movê-los entre as colunas.</p>
+        <p class="board-message" id="board-message" role="status" aria-live="polite"></p>
+      </section>
+    </main>
 
-        const meta = document.createElement("div");
-        meta.className = "task-meta";
-        const label = document.createElement("span");
-        label.className = "task-label";
-        label.textContent = "Tarefa";
-        const date = document.createElement("time");
-        date.className = "task-date";
-        date.dateTime = task.createdAt;
-        const createdAt = new Date(task.createdAt);
-        date.textContent = Number.isNaN(createdAt.getTime())
-          ? ""
-          : new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(createdAt);
-        meta.append(label, date);
-        card.append(top, description, meta);
+    <div class="modal-backdrop" id="modal-backdrop" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description">
+        <header class="modal-header">
+          <div>
+            <h2 id="modal-title">Nova tarefa</h2>
+            <p id="modal-description">Adicione uma atividade ao seu quadro.</p>
+          </div>
+          <button class="modal-close" id="close-modal" type="button" aria-label="Fechar">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </header>
 
-        card.addEventListener("dragstart", (event) => {
-          draggedTaskId = task.id;
-          card.classList.add("is-dragging");
-          event.dataTransfer.effectAllowed = "move";
-          event.dataTransfer.setData("text/plain", task.id);
-        });
-        card.addEventListener("dragend", () => {
-          draggedTaskId = null;
-          card.classList.remove("is-dragging");
-          document.querySelectorAll(".column.is-over").forEach((column) => column.classList.remove("is-over"));
-        });
-        return card;
-      }
+        <form id="task-form">
+          <div class="field">
+            <label for="task-title">Título</label>
+            <input id="task-title" name="title" type="text" maxlength="100" placeholder="Ex.: Preparar apresentação" required>
+          </div>
 
-      function render() {
-        let total = 0;
-        document.querySelectorAll(".task-list").forEach((list) => {
-          const matchingTasks = tasks.filter((task) => task.status === list.dataset.list);
-          list.replaceChildren();
-          matchingTasks.forEach((task) => list.append(createTaskCard(task)));
-          if (matchingTasks.length === 0) {
-            const empty = document.createElement("div");
-            empty.className = "empty-state";
-            empty.textContent = "Solte uma tarefa aqui ou adicione uma nova.";
-            list.append(empty);
-          }
-          const count = list.closest(".column").querySelector(".column-count");
-          count.textContent = String(matchingTasks.length);
-          count.setAttribute("aria-label", `${matchingTasks.length} ${matchingTasks.length === 1 ? "tarefa" : "tarefas"}`);
-          total += matchingTasks.length;
-        });
-        document.getElementById("total-count").textContent = String(total);
-      }
+          <div class="field">
+            <label for="task-description">Descrição <span class="optional">(opcional)</span></label>
+            <textarea id="task-description" name="description" maxlength="500" placeholder="Adicione detalhes sobre esta tarefa..."></textarea>
+          </div>
 
-      function openModal() {
-        backdrop.hidden = false;
-        document.body.style.overflow = "hidden";
-        titleInput.focus();
-      }
-
-      function closeModal() {
-        backdrop.hidden = true;
-        document.body.style.overflow = "";
-        form.reset();
-        document.getElementById("open-modal").focus();
-      }
-
-      document.getElementById("open-modal").addEventListener("click", openModal);
-      document.getElementById("close-modal").addEventListener("click", closeModal);
-      document.getElementById("cancel-modal").addEventListener("click", closeModal);
-      backdrop.addEventListener("click", (event) => {
-        if (event.target === backdrop) closeModal();
-      });
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && !backdrop.hidden) closeModal();
-      });
-
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const title = titleInput.value.trim();
-        if (!title) {
-          titleInput.focus();
-          return;
-        }
-        tasks.unshift({
-          id: window.crypto && typeof window.crypto.randomUUID === "function"
-            ? window.crypto.randomUUID()
-            : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          title,
-          description: descriptionInput.value.trim(),
-          status: "todo",
-          createdAt: new Date().toISOString()
-        });
-        saveTasks();
-        render();
-        closeModal();
-      });
-
-      document.querySelectorAll(".column").forEach((column) => {
-        column.addEventListener("dragover", (event) => {
-          event.preventDefault();
-          if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-          column.classList.add("is-over");
-        });
-        column.addEventListener("dragleave", (event) => {
-          if (!column.contains(event.relatedTarget)) column.classList.remove("is-over");
-        });
-        column.addEventListener("drop", (event) => {
-          event.preventDefault();
-          column.classList.remove("is-over");
-          const taskId = event.dataTransfer.getData("text/plain") || draggedTaskId;
-          const task = tasks.find((item) => item.id === taskId);
-          const status = column.dataset.status;
-          if (!task || !statuses.includes(status)) return;
-          task.status = status;
-          saveTasks();
-          render();
-        });
-      });
-
-      render();
-    })();
-  </script>
+          <div class="form-actions">
+            <button class="cancel-button" id="cancel-modal" type="button">Cancelar</button>
+            <button class="submit-button" type="submit">Adicionar tarefa</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
 </body>
 </html>
