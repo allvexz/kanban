@@ -1,0 +1,206 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Funcoes compartilhadas para autenticar e verificar o papel no quadro.
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function boardData(boardId) {
+      return get(/databases/$(database)/documents/boards/$(boardId)).data;
+    }
+
+    function isMember(boardId) {
+      return signedIn()
+        && request.auth.uid in boardData(boardId).memberIds;
+    }
+
+    function isOwner(boardId) {
+      return isMember(boardId)
+        && boardData(boardId).ownerId == request.auth.uid
+        && boardData(boardId).roles[request.auth.uid] == 'OWNER';
+    }
+
+    function canEdit(boardId) {
+      return isMember(boardId)
+        && boardData(boardId).roles[request.auth.uid] in ['OWNER', 'EDITOR'];
+    }
+
+    // Valida o formato e os limites dos campos permitidos em uma tarefa.
+    function validTask(task) {
+      return task.keys().hasAll([
+          'boardId', 'title', 'description', 'columnId', 'isBacklog',
+          'creatorId', 'creatorEmail', 'assigneeId', 'assigneeEmail',
+          'dueDate', 'priority', 'labels', 'storyPoints',
+          'acceptanceCriteria', 'definitionOfDone', 'checklist',
+          'sprintId', 'createdAt', 'updatedAt'
+        ])
+        && task.keys().hasOnly([
+          'boardId', 'title', 'description', 'columnId', 'isBacklog',
+          'creatorId', 'creatorEmail', 'assigneeId', 'assigneeEmail',
+          'dueDate', 'priority', 'labels', 'storyPoints',
+          'acceptanceCriteria', 'definitionOfDone', 'checklist',
+          'sprintId', 'createdAt', 'updatedAt'
+        ])
+        && task.title is string
+        && task.title.size() > 0
+        && task.title.size() <= 120
+        && task.description is string
+        && task.description.size() <= 3000
+        && task.columnId is string
+        && task.isBacklog is bool
+        && task.isBacklog == (task.columnId == '')
+        && task.creatorId is string
+        && task.assigneeId is string
+        && task.assigneeEmail is string
+        && task.dueDate is string
+        && task.priority in ['low', 'medium', 'high']
+        && task.labels is list
+        && task.labels.hasOnly(['Bug', 'Feature', 'Urgente'])
+        && (task.storyPoints == null || task.storyPoints in [1, 2, 3, 5, 8, 13, 21])
+        && task.acceptanceCriteria is string
+        && task.definitionOfDone is string
+        && task.checklist is list
+        && task.sprintId is string
+        && task.createdAt is string
+        && task.updatedAt is string
+        && (task.assigneeId == '' || task.assigneeId in boardData(task.boardId).memberIds);
+    }
+
+    // O usuario pode consultar uma conta por e-mail, mas nao enumerar o diretorio.
+    // Cada conta so pode criar ou atualizar o proprio registro.
+    match /userDirectory/{emailKey} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create, update: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'updatedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.updatedAt is string;
+      allow delete: if false;
+    }
+
+    // Perfis e dados antigos de Kanban ficam isolados por UID.
+    match /userProfiles/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /users/{uid}/kanban/{document=**} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // OWNER controla o quadro; membros autenticados podem le-lo.
+    match /boards/{boardId} {
+      allow get, list: if signedIn() && request.auth.uid in resource.data.memberIds;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerEmail == request.auth.token.email
+        && request.resource.data.memberIds == [request.auth.uid]
+        && request.resource.data.roles[request.auth.uid] == 'OWNER'
+        && request.resource.data.columns is list
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0;
+      allow update: if isOwner(boardId)
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.roles[request.auth.uid] == 'OWNER'
+        && request.auth.uid in request.resource.data.memberIds
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0;
+      allow delete: if isOwner(boardId);
+
+      match /members/{memberId} {
+        allow read: if isMember(boardId);
+        // getAfter valida a lista e o papel novos em convites e alteracoes atomicas.
+        allow create, update: if isOwner(boardId)
+          && memberId in getAfter(/databases/$(database)/documents/boards/$(boardId)).data.memberIds
+          && request.resource.data.uid == memberId
+          && request.resource.data.email is string
+          && request.resource.data.role == getAfter(/databases/$(database)/documents/boards/$(boardId)).data.roles[memberId]
+          && request.resource.data.role in ['OWNER', 'EDITOR', 'VIEWER'];
+        allow delete: if isOwner(boardId)
+          && memberId != boardData(boardId).ownerId;
+      }
+
+      match /activities/{activityId} {
+        allow read: if isMember(boardId);
+        // O historico e append-only: membros com permissao de edicao podem registrar eventos.
+        allow create: if canEdit(boardId)
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.userEmail == request.auth.token.email
+          && request.resource.data.description is string
+          && request.resource.data.createdAt is string
+          && (request.resource.data.taskId == null || request.resource.data.taskId is string);
+        allow update, delete: if false;
+      }
+
+      match /sprints/{sprintId} {
+        allow read: if isMember(boardId);
+        // EDITOR e OWNER podem criar/atualizar sprints; apenas OWNER pode remove-las.
+        allow create: if canEdit(boardId)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.startDate is string
+          && request.resource.data.endDate is string
+          && request.resource.data.status in ['active', 'completed'];
+        allow update: if canEdit(boardId)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.name is string
+          && request.resource.data.startDate is string
+          && request.resource.data.endDate is string
+          && request.resource.data.status in ['active', 'completed'];
+        allow delete: if isOwner(boardId);
+      }
+    }
+
+    // EDITOR e OWNER alteram tarefas; VIEWER so pode ler.
+    // O limite WIP e verificado pela interface, nao por estas regras.
+    match /tasks/{taskId} {
+      allow get, list: if isMember(resource.data.boardId);
+      allow create: if canEdit(request.resource.data.boardId)
+        && request.resource.data.creatorId == request.auth.uid
+        && validTask(request.resource.data);
+      allow update: if canEdit(resource.data.boardId)
+        // O quadro, autor original e data de criacao nao podem ser trocados.
+        && request.resource.data.boardId == resource.data.boardId
+        && request.resource.data.creatorId == resource.data.creatorId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validTask(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'title', 'description', 'columnId', 'isBacklog', 'assigneeId',
+          'assigneeEmail', 'dueDate', 'priority', 'labels', 'storyPoints',
+          'acceptanceCriteria', 'definitionOfDone', 'checklist', 'sprintId',
+          'updatedAt'
+        ]);
+      allow delete: if isOwner(resource.data.boardId);
+
+      match /comments/{commentId} {
+        function parentBoardId() {
+          return get(/databases/$(database)/documents/tasks/$(taskId)).data.boardId;
+        }
+
+        allow read: if isMember(parentBoardId());
+        allow create: if canEdit(parentBoardId())
+          && request.resource.data.taskId == taskId
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.authorEmail == request.auth.token.email
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt is string
+          && request.resource.data.updatedAt is string;
+        allow update: if canEdit(parentBoardId())
+          && resource.data.authorId == request.auth.uid
+          && request.resource.data.authorId == resource.data.authorId
+          && request.resource.data.taskId == resource.data.taskId
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000;
+        // O autor pode apagar o proprio comentario; OWNER pode limpar ao excluir tarefa.
+        allow delete: if canEdit(parentBoardId())
+          && (resource.data.authorId == request.auth.uid || isOwner(parentBoardId()));
+      }
+    }
+  }
+}

@@ -4,16 +4,29 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
   onAuthStateChanged,
   setPersistence,
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore,
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  addDoc,
+  deleteDoc,
   setDoc,
   updateDoc,
+  writeBatch,
+  runTransaction,
+  arrayUnion,
+  arrayRemove,
+  deleteField,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import firebaseConfig from "./firebase-config.js";
@@ -41,10 +54,23 @@ export {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
   onAuthStateChanged,
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  addDoc,
+  deleteDoc,
   setDoc,
   updateDoc,
+  writeBatch,
+  runTransaction,
+  arrayUnion,
+  arrayRemove,
+  deleteField,
   onSnapshot
 };
