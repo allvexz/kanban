@@ -119,7 +119,8 @@ service cloud.firestore {
           && request.resource.data.role == getAfter(/databases/$(database)/documents/boards/$(boardId)).data.roles[memberId]
           && request.resource.data.role in ['OWNER', 'EDITOR', 'VIEWER'];
         allow delete: if isOwner(boardId)
-          && memberId != boardData(boardId).ownerId;
+          && (memberId != boardData(boardId).ownerId
+            || !existsAfter(/databases/$(database)/documents/boards/$(boardId)));
       }
 
       match /activities/{activityId} {
@@ -131,7 +132,8 @@ service cloud.firestore {
           && request.resource.data.description is string
           && request.resource.data.createdAt is string
           && (request.resource.data.taskId == null || request.resource.data.taskId is string);
-        allow update, delete: if false;
+        allow delete: if isOwner(boardId);
+        allow update: if false;
       }
 
       match /sprints/{sprintId} {
