@@ -10,7 +10,6 @@ Kanban colaborativo em português, feito como site estático com Firebase Authen
 - Tarefas com responsável, prioridade, prazo, etiquetas, story points, critérios de aceite e Definition of Done.
 - Backlog, colunas configuráveis, arrastar e soltar, sprints e histórico de atividades.
 - Página individual de tarefa com checklist e comentários.
-- Chat de IA por quadro, com respostas baseadas nos cards atuais e no histórico recente da conversa.
 - Migração única de tarefas legadas da conta para um quadro pessoal.
 
 O convite procura o e-mail no diretório de contas do Flowboard. A pessoa convidada precisa se cadastrar antes; o sistema não envia e-mails.
@@ -29,20 +28,6 @@ Sem publicar as regras, a interface pode carregar, mas as operações de dados s
 O `netlify.toml` da raiz do repositório publica a pasta `kanban-main` e reescreve rotas como `/tasks/{id}` para `index.html`. Conecte o repositório ao Netlify e mantenha a raiz do projeto como diretório-base. Depois do deploy, cadastre o domínio atribuído pelo Netlify nos domínios autorizados do Firebase.
 
 Para executar localmente, sirva esta pasta por HTTP (por exemplo, com a extensão Live Server do VS Code). O carregamento por `file://` não é suportado por causa dos módulos JavaScript.
-
-## Assistente de IA
-
-O chat usa a função serverless `/.netlify/functions/ai-chat`, publicada também como `/api/ai/chat`. O navegador envia a pergunta, o histórico recente e o token de autenticação Firebase; a função busca o quadro e as tarefas usando esse token, portanto as regras do Firestore continuam controlando o acesso. Somente no servidor os dados relevantes são enviados ao Google Gemini para gerar a resposta. A chave do Gemini nunca deve ser colocada em `js/` ou em `firebase-config.js`.
-
-Configure estas variáveis no painel do Netlify, em **Site configuration → Environment variables**:
-
-- `GEMINI_API_KEY`: chave da API Gemini, mantida como segredo.
-- `FIREBASE_PROJECT_ID`: ID do projeto Firebase usado pelo Flowboard.
-- `GEMINI_MODEL`: opcional; por padrão é `gemini-2.5-flash`.
-
-Depois de configurar as variáveis, faça um novo deploy do site. Para testar localmente com a função serverless, use o Netlify CLI na raiz do repositório (`netlify dev`) com as mesmas variáveis disponíveis no ambiente. Um servidor estático como Live Server não fornece a rota `/api/ai/chat`.
-
-O contrato do endpoint pode ser validado sem uma chave Gemini com `node tests/ai-chat-function-smoke.js`; esse teste simula as respostas do Firestore e do modelo.
 
 ## Permissões e limitações
 
